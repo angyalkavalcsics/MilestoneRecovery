@@ -5,12 +5,11 @@ admitLog <- data.frame(admitLog$DATE..IN,admitLog$TIME.IN,admitLog$DATE.OUT,
                        admitLog$TIME..OUT,admitLog$X..DAYS,admitLog$Bed.nights)
 colnames(admitLog) <- c("DateIn", "TimeIn", "DateOut", "TimeOut", "NumDays", 
                         "NumNights")
-
+admitLog <- admitLog[,1:4]
 # don't really care about na in the other columns at this time
-admit = admitLog[!(is.na(admitLog$TimeOut) | admitLog$TimeOut=="-" | admitLog$TimeOut=="" | admitLog$TimeOut == "?" | admitLog$TimeOut == "0"),]
-admit = admit[!(is.na(admit$TimeIn) | admit$TimeIn=="" | admit$TimeIn == "?"),]
+admit = admitLog[!(is.na(admitLog$TimeOut) | admitLog$TimeOut=="-" | admitLog$TimeOut=="" | admitLog$TimeOut=="100-0" | admitLog$TimeOut=="n/a"  | admitLog$TimeOut==" "  | admitLog$TimeOut == "?" | admitLog$TimeOut == "0"),]
+admit = admit[!(is.na(admit$TimeIn) | admit$TimeIn== "" | admit$TimeIn== " " | admit$TimeIn == "?" | admit$TimeOut == "0" | admit$TimeOut=="n/a"),]
 head(admit)
-admit = admit[, 1:4]
 
 # read in non admit data
 
@@ -30,44 +29,39 @@ head(nonadmit)
 # first need to combine the data/time columns for arrival and departure
 
 sapply(admit, class)
-admit$TimeOut <- as.integer(admit$TimeOut)
-sapply(admit, class)
 
-# gotta love reformatting everything
+newTimeIn <- gsub('^([0-9]{1,2})([0-9]{2})$', '\\1:\\2', sprintf('%04d',admit$TimeIn))
 
-newTimeIn <- sprintf("%04s", admit$TimeIn)
-newTimeIn <- gsub("(..)(..)", "\\1:\\2", newTimeIn)
-
-newTimeOut <- sprintf("%04s", admit$TimeOut)
-newTimeOut <- gsub("(..)(..)", "\\1:\\2", newTimeOut)
+admit$TimeOut = as.integer(admit$TimeOut)
+newTimeOut <- gsub('^([0-9]{1,2})([0-9]{2})$', '\\1:\\2', sprintf('%04d',admit$TimeOut))
 
 newDateIn = as.Date(admit$DateIn,format='%m/%d/%y')
 newDateOut = as.Date(admit$DateOut,format='%m/%d/%y')
 
-admit$arrival <- with(admit, paste0(newDateIn, " ", newTimeIn, ":00"))
-admit$departure <- with(admit, paste0(newDateOut, " ", newTimeOut, ":00"))
+admit$arrival <- with(admit, paste0(newDateIn, " ", newTimeIn))
+admit$departure <- with(admit, paste0(newDateOut, " ", newTimeOut))
 
 head(admit)
 
-admit = na.omit(admit)
-
 # as.POSIXct() is vectorized
 
-arrInHrs = as.numeric(as.POSIXct(admit$arrival)-as.POSIXct("2018-01-01 08:45:00"), units= "hours")
+arrInHrs = as.numeric(as.POSIXct(admit$arrival, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "weeks")
 admit$arrival_hrs <- arrInHrs
-depInHrs = as.numeric(as.POSIXct(admit$departure)-as.POSIXct("2018-01-01 08:45:00"), units= "hours")
+depInHrs = as.numeric(as.POSIXct(admit$departure, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "weeks")
 admit$departure_hrs <- depInHrs
-admit = admit[admit$departure_hrs >= 0, ]
 
+# fixes departure times that occur before arrival times
+admit = admit[admit["departure_hrs"] > 0,]
 
 admit$service = admit$departure_hrs - admit$arrival_hrs
 
-as.numeric(as.POSIXct("2018-01-16 18:45:00")-as.POSIXct("2018-01-01 08:45:00"), units= "hours")
+admit = admit[admit["service"] > 0,]
 
-admit$interarrivals = c(diff(arrInHrs), NA)
+admit$interarrival = c(diff(admit$arrival_hrs), NA)
 
 hist(admit$service) # This does not look exponential to me
 # erlang perhaps?
 hist(admit$arrival_hrs) # looks approx uniform
 hist(admit$departure_hrs) # also approx unif
-hist(admit$interarrivals)
+hist(admit$interarrival)
+
