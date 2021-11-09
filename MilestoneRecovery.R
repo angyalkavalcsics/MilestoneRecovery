@@ -61,7 +61,7 @@ admit$interarrivals = depInHrs - arrInHrs
 
 admit = admit[admit$interarrivals >= 0, ]
 
-hist(admit$interarrivals) # possibly exp--not certain. 
+hist(admit$interarrivals) # This does not look exponential to me
 # check out pdf in drive
 hist(admit$arrival_hrs) # looks approx uniform
 hist(admit$departure_hrs) # also arrox  unif
