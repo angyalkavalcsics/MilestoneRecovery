@@ -50,22 +50,22 @@ admit = na.omit(admit)
 
 # as.POSIXct() is vectorized
 
-
 arrInHrs = as.numeric(as.POSIXct(admit$arrival)-as.POSIXct("2018-01-01 08:45:00"), units= "hours")
 admit$arrival_hrs <- arrInHrs
 depInHrs = as.numeric(as.POSIXct(admit$departure)-as.POSIXct("2018-01-01 08:45:00"), units= "hours")
 admit$departure_hrs <- depInHrs
-admit$interarrivals = depInHrs - arrInHrs
+admit$service = depInHrs - arrInHrs
+admit$interarrivals = c(diff(arrInHrs), NA)
 
 # this data is really........
 
 admit = admit[admit$interarrivals >= 0, ]
 
-hist(admit$interarrivals) # This does not look exponential to me
+hist(admit$service) # This does not look exponential to me
 # erlang perhaps?
 hist(admit$arrival_hrs) # looks approx uniform
 hist(admit$departure_hrs) # also approx unif
-
+hist(admit$interarrivals)
 
 
 
