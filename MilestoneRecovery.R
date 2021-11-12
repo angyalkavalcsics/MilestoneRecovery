@@ -45,41 +45,66 @@ head(admit)
 
 # as.POSIXct() is vectorized
 
+# in hrs 
+
 arrInHrs = as.numeric(as.POSIXct(admit$arrival, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "hours")
 admit$arrival_hrs <- arrInHrs
 depInHrs = as.numeric(as.POSIXct(admit$departure, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "hours")
 admit$departure_hrs <- depInHrs
 
+# in days
+
+arrInDays = as.numeric(as.POSIXct(admit$arrival, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "days")
+admit$arrival_days<- arrInDays
+depInDays = as.numeric(as.POSIXct(admit$departure, format = "%Y-%m-%d %H:%M")-as.POSIXct("2018-01-01 08:45", format = "%Y-%m-%d %H:%M"), units= "days")
+admit$departure_days <- depInDays
+
 head(admit)
 
 # fixes departure times that occur before arrival times
-admit = admit[admit["departure_hrs"] > 0,]
+admit = admit[admit["departure_days"] > 0,]
 
-admit$service = admit$departure_hrs - admit$arrival_hrs
+# there's still an issue somewhere...
+admit = admit[!(is.na(admit$arrival_days)),]
+
+admit$service = admit$departure_days - admit$arrival_days
 
 admit = admit[admit["service"] > 0,]
 
-admit$interarrival = c(diff(admit$arrival_hrs), NA)
+admit$interarrival = c(diff(admit$arrival_days), NA)
 
 hist(admit$service) # This does not look exponential to me
 # erlang perhaps?
-hist(admit$arrival_hrs) # looks approx uniform
-hist(admit$departure_hrs) # also approx unif
+hist(admit$arrival_days) # looks approx uniform
+hist(admit$departure_days) # also approx unif
 hist(admit$interarrival)
 
-# there's still an issue somewhere...
-admit = admit[!(is.na(admit$arrival_hrs)),]
+# compute average arrival rate
+lambda = 1 / mean(admit$arrival_days)
+# 0.002771421
 
-# Where to go from here?
-# The code above takes the data we were given, assumes that the first arrival
-# is the beginning of a "simulation" and adjusts the arrival/departure times
-# we were given in terms of this first time. We need to now figure out how to 
-# use these times and incorporate the number of beds. 
+# compute the mean and std of interarrival times in days-units
+mean_interarrival = mean(admit$interarrival[1:(length(admit$interarrival)-1)])
+# 0.2934559
 
+sd_interarrival = sd(admit$interarrival[1:(length(admit$interarrival)-1)])
+# 0.3401754
 
+# these values are close so we have some justification for using Poisson arrivals
 
+# compute average service time (days)
+mu = mean(admit$service)
+# 3.578522
 
+# average service rate
+1/mu
+# 0.279445
 
+# Now compute the performance measures for this system using M/G/c loss model.
 
+# Find model loss probability (with c=16).
 
+# Compare with actual fraction of  patients turned down.
+
+# Will use this for validation of our model.
 
