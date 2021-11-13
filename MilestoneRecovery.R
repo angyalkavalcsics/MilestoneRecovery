@@ -73,6 +73,13 @@ admit = admit[admit["service"] > 0,]
 
 admit$interarrival = c(diff(admit$arrival_days), NA)
 
+
+library(tidyverse)
+
+arrival_counts_days <- admit %>% group_by(DateIn) %>% count()
+count_days <- arrival_counts_days %>% pull(n)
+hist(count_days)
+
 hist(admit$service) # This does not look exponential to me
 # erlang perhaps?
 hist(admit$arrival_days) # looks approx uniform
@@ -80,8 +87,8 @@ hist(admit$departure_days) # also approx unif
 hist(admit$interarrival)
 
 # compute average arrival rate
-lambda = 1 / mean(admit$arrival_days)
-# 0.002771421
+lambda = 1 / mean(count_days)
+# 0.2862887
 
 # compute the mean and std of interarrival times in days-units
 mean_interarrival = mean(admit$interarrival[1:(length(admit$interarrival)-1)])
@@ -97,7 +104,7 @@ mu = mean(admit$service)
 # 3.578522
 
 # average service rate
-1/mu
+service_rate = 1/mu
 # 0.279445
 
 # Now compute the performance measures for this system using M/G/c loss model.
