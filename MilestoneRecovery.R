@@ -87,8 +87,8 @@ hist(admit$departure_days) # also approx unif
 hist(admit$interarrival)
 
 # compute average arrival rate
-lambda = 1 / mean(count_days)
-# 0.2862887
+lambda = mean(count_days)
+# 3.492978
 
 # compute the mean and std of interarrival times in days-units
 mean_interarrival = mean(admit$interarrival[1:(length(admit$interarrival)-1)])
