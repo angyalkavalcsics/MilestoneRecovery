@@ -133,7 +133,7 @@ hist(count_female_nonadmit, main = "Count Data for Female Non-Admits",
      xlab = "Females Turned Away Per Month")
 # standard deviation of female count data
 sd(count_female_nonadmit) # 8.161
-# compute average effective arrival rate for females per month
+# compute average arrival rate for non-admit females per month
 lambda_female_nonadmit <- mean(count_female_nonadmit) #43.42
 # approximate a conversion to days
 lambda_fem_nonadmit_days <- lambda_female_nonadmit/30 # 1.447
@@ -151,12 +151,12 @@ hist(count_male_nonadmit, main = "Count Data for Male Non-Admits",
      xlab = "Males Turned Away Per Month")
 # standard deviation of male count data
 sd(count_male_nonadmit) # 15.73
-# compute average effective arrival rate for males per month
+# compute average arrival rate for non-admit males per month
 lambda_male_nonadmit <- mean(count_male_nonadmit) #108.67
 # approximate a conversion to days
 lambda_male_nonadmit_days <- lambda_male_nonadmit/30 # 3.62
 ################################################################################
-# get total lambda for nonadmits
+# get total lambda for non-admits
 lambda_nonadmit_total <- lambda_male_nonadmit_days + lambda_fem_nonadmit_days
 # 5.07
 ################################################################################
